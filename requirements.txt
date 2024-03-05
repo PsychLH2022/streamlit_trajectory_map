@@ -52,7 +52,6 @@ Pygments==2.17.2
 python-dateutil==2.8.2
 python-decouple==3.8
 pytz==2024.1
-pypiwin32==305.1
 pyzmq==25.1.2
 referencing==0.33.0
 requests==2.31.0
