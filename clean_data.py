@@ -72,9 +72,6 @@ def clean_data(df):
     print("己方位置区为缺失值的记录数: ", num_nan_loc)
     print("己方小区为缺失值的记录数: ", num_nan_dis)
 
-    # change data types
-    df_3[['己方号码', '对方号码', '己方卡号']] = df_3[['己方号码', '对方号码', '己方卡号']].astype(str)
-
     return df_3
     
 
@@ -96,7 +93,7 @@ def lbs_to_coord(df, mnc=0):
         df.loc[i, '错误'] = result['errcode']
         df.loc[i, '纬度'] = result['lat']
         df.loc[i, '经度'] = result['lon']
-        df.loc[i, '经度半径'] = result['radius']
+        df.loc[i, '精度半径'] = result['radius']
         df.loc[i, '地址'] = result['address']
     
     return df
@@ -107,7 +104,7 @@ def lbs_to_coord(df, mnc=0):
 def get_loc(df):
     df_uniq = df[['己方位置区', '己方小区']].value_counts()
     df_uniq = df_uniq.reset_index()
-    df_uniq.rename(columns={"count": "次数"}, inplace=True)
+    df_uniq.drop('count', axis=1, inplace=True)
     
     df_coord = lbs_to_coord(df_uniq.loc[:, :])
 
@@ -116,12 +113,12 @@ def get_loc(df):
     # change dtypes of latitude, longitude and longitude radius to float
     df_final['经度'] = df_final['经度'].astype(float)
     df_final['纬度'] = df_final['纬度'].astype(float)
-    df_final['经度半径'] = df_final['经度半径'].astype(float)
+    df_final['精度半径'] = df_final['精度半径'].astype(float)
 
     # change 0 of latitude, longitude and longitude radius to nan
     df_final['经度'] = df_final['经度'].replace(0, np.nan)
     df_final['纬度'] = df_final['纬度'].replace(0, np.nan)
-    df_final['经度半径'] = df_final['经度半径'].replace(0, np.nan)
+    df_final['精度半径'] = df_final['精度半径'].replace(0, np.nan)
 
     # change blank spaces in address to nan
     df_final['地址'] = df_final['地址'].replace('', np.nan)

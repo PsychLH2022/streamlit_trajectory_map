@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
+import numpy as np
 import time
 from clean_data import process_data
 from functions import *
@@ -34,6 +35,7 @@ if st.session_state['have_data'] == False:
     st.warning("如果您上传的话单数据文件为未处理过的, 请确保文件中存在'己方号码'、'截获时间'、'呼叫类型'、'对方号码'、'己方位置区'、'己方小区'这6个列名。\
                上传未处理的文件后会生成一个处理后的csv文件, 请按下载按钮下载并妥善保存, 该文件名为原文件名后加上'_handled'。\
                之后的使用请优先上传处理后的文件。")
+    st.warning('由于lbs转换经纬度的接口限制, 本程序每天处理原始数据的记录数量上限为10000条, 建议单次处理原始数据的记录数量不超过5000条。如果是使用处理后的数据, 则无使用限制。')
 
     # upload file
     uploaded_file = st.file_uploader("上传话单文件", type=["csv", "xlsx"])
@@ -80,6 +82,15 @@ if st.session_state['have_data'] == False:
 
 elif st.session_state['have_data'] == True:
     data = st.session_state['df_final']
+    
+    # change the data types of some columns
+    change_col_list = ['己方号码', '对方号码', '己方位置区', '己方小区', '己方卡号', '己方机身码']
+    for col in change_col_list:
+        if col in data.columns:
+            data[col] = data[col].fillna(0).astype(np.int64).astype(str)
+            data[col] = data[col].replace('0', pd.NA)
+
+    # create one dataframe for the valid data and one for the unvalid data
     data_no_nan = data.dropna(subset=['纬度', '经度'])
     data_unvalid = data[~data.index.isin(data_no_nan.index)]
 
@@ -144,9 +155,6 @@ elif st.session_state['have_data'] == True:
     colors = colors_ava[:len(phone_list)]
     phone_color_dict = {phone: color for phone, color in zip(phone_list, colors)}
 
-    # create counts dictionary for one phone number to others
-    df_uniq_by_phones = data_no_nan[['己方号码', '对方号码']].value_counts().reset_index()
-
     # the setting for updating the traj
     if st.session_state['traj_generated'] == False:
         if (generate_traj == True) & (phone_selected != []):
@@ -161,8 +169,7 @@ elif st.session_state['have_data'] == True:
         for key, value in record_dict.items():
             st.write(f"所选拦截时间段内，关于号码{key}的记录有{value}条。")
 
-        st.header('针对全部数据的数据表：')
-
+        st.header('全部数据的处理结果：')
         # show basic information for all data
         num_all_record = len(data.index)
         num_region_na = data['己方位置区'].isna().sum()
@@ -171,27 +178,29 @@ elif st.session_state['have_data'] == True:
         num_errcode_10000 = len(data[data['错误']=='参数错误'])
         num_errcode_10001 = len(data[data['错误']=='无查询结果'])
         num_errcode_nan = data['错误'].isna().sum()
-        st.markdown('**所有数据处理结果:**')
+        num_all_unvalid = num_errcode_10000 + num_errcode_10001 + num_errcode_nan
         st.write(f"\n\n- 共有记录{num_all_record}条;\
-                 \n- 转换坐标成功{num_errcode_0}条;\
-                 \n- 转换坐标参数错误{num_errcode_10000}条;\
-                 \n- 转换坐标无查询结果{num_errcode_10001}条;\
-                 \n- 转换坐标结果缺失{num_errcode_nan}条")
+                 \n- 转换坐标成功{num_errcode_0}条, 即能显示位置的记录数量;\
+                 \n- 无法显示位置的记录数为{num_all_unvalid}条; 转换坐标参数错误{num_errcode_10000}条; 转换坐标无查询结果{num_errcode_10001}条; 转换坐标结果缺失{num_errcode_nan}条")
 
-        if st.checkbox('显示电话间交互次数'):
-            st.dataframe(df_uniq_by_phones)
+        if st.checkbox('显示所有数据（包含有效和无效）'):
+            st.write('以下表中的空白表示缺失数据')
+            create_interactive_df(data)
 
         if st.checkbox('显示所有有效数据'):
             data_temp_1 = data_no_nan.reset_index(drop=True)
-            st.dataframe(data_temp_1)
+            st.write('以下表中的空白表示缺失数据')
+            create_interactive_df(data_temp_1)
+            
 
         if st.checkbox('显示所有无效数据'):
             data_temp_2 = data_unvalid.reset_index(drop=True)
+            st.write('以下表中的空白表示缺失数据')
+            create_interactive_df(data_temp_2)
             st.write("无效数据类型:  \n \
                      1.己方社区或己方位置区数据存在缺失  \n \
                      2.转换为经纬度时参数错误(在'错误'列呈现为'参数错误')  \n \
                      3.转换为经纬度时无查询结果(在'错误'列呈现为'无查询结果')")
-            st.dataframe(data_temp_2)
 
 
 

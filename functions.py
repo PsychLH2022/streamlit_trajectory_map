@@ -4,6 +4,7 @@ import streamlit as st
 import datetime
 import folium
 from folium.plugins import MarkerCluster
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 # dictionary for map tiles and attributes
 map_dict = {"高德-常规图": 'http://wprd02.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7',
@@ -131,3 +132,17 @@ def plot_trajectories(df, person_phones, phone_color_dict, start_time, end_time,
         
     # show the map
     return map, num_record_by_phone_dict
+
+
+
+# create an interactive dataframe
+def create_interactive_df(df):
+    builder = GridOptionsBuilder.from_dataframe(df)
+    builder.configure_default_column(groupable=True)
+    builder.configure_side_bar()
+    builder.configure_pagination(paginationAutoPageSize=False, paginationPageSize=50)
+    AgGrid(df,
+           gridOptions=builder.build(),
+           custom_css={"#gridToolBar": {"padding-bottom": "0px !important"}},
+           height=600,
+           enable_quicksearch=True)
