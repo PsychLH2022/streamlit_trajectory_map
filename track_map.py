@@ -7,8 +7,7 @@ from clean_data import process_data
 from functions import *
 
 # set the page
-st.set_page_config(page_title="话单轨迹", layout="wide")
-
+st.set_page_config(page_title="话单行迹生成", layout="wide")
 
 # initialization
 if 'handled_file' not in st.session_state:   # indicate the file uploaded is handled or not
