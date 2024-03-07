@@ -88,7 +88,8 @@ elif st.session_state['have_data'] == True:
         if col in data.columns:
             data[col] = data[col].fillna(0).astype(np.int64).astype(str)
             data[col] = data[col].replace('0', pd.NA)
-
+    data['截获时间'] = pd.to_datetime(data['截获时间'])
+    
     # create one dataframe for the valid data and one for the unvalid data
     data_no_nan = data.dropna(subset=['纬度', '经度'])
     data_unvalid = data[~data.index.isin(data_no_nan.index)]
