@@ -25,6 +25,8 @@ def remove_suffix(file_name):
         file_name_suffix_rmed = file_name.replace('.csv', '').strip()
     elif file_name.endswith('.xlsx'):
         file_name_suffix_rmed = file_name.replace('.xlsx', '').strip()
+    elif file_name.endswith('.xls'):
+        file_name_suffix_rmed = file_name.replace('.xls', '').strip()
 
     return file_name_suffix_rmed
 

@@ -35,11 +35,8 @@ def read_data_by_file_type(uploaded_file, file_name):
     # read data by file type and encoding
     if file_name.endswith("csv"):
         df = pd.read_csv(uploaded_file, encoding = encoding)
-    elif file_name.endswith("xlsx"):
+    elif file_name.endswith("xlsx") or file_name.endswith("xls"):
         df = pd.read_excel(uploaded_file, sheet_name=0)
-    
-    # remove * in column names
-    df.columns = [col.replace("*", "") for col in df.columns]
 
     return df
 
@@ -47,6 +44,9 @@ def read_data_by_file_type(uploaded_file, file_name):
 
 # clean data
 def clean_data(df):
+    # remove * in column names
+    df.columns = [col.replace("*", "") for col in df.columns]
+
     # extract useful columns
     basic_cols = ['己方号码', '截获时间', '呼叫类型', '对方号码', '己方位置区', '己方小区']
     other_cols = ['己方卡号', '己方机身码', '时长', '己方姓名', '对方姓名']
@@ -66,7 +66,8 @@ def clean_data(df):
     df_3 = df_2.copy()
     for col in ['己方位置区', '己方小区']:
         df_3[col] = df_3[col].astype(str)
-        df_3[col] = df_3[col].str.strip().replace('0', np.nan).copy()
+        df_3[col] = df_3[col].str.strip().replace('0', np.nan)
+        df_3[col] = df_3[col].replace('nan', np.nan)
     num_nan_loc = df_3['己方位置区'].isna().sum()
     num_nan_dis = df_3['己方小区'].isna().sum()
     print("己方位置区为缺失值的记录数: ", num_nan_loc)

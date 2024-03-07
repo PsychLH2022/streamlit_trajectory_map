@@ -31,13 +31,13 @@ def on_download_button_clicked():
 if st.session_state['have_data'] == False:
     st.title("话单轨迹呈现")
     
-    st.warning("如果您上传的话单数据文件为未处理过的, 请确保文件中存在'己方号码'、'截获时间'、'呼叫类型'、'对方号码'、'己方位置区'、'己方小区'这6个列名。\
-               上传未处理的文件后会生成一个处理后的csv文件, 请按下载按钮下载并妥善保存, 该文件名为原文件名后加上'_handled'。\
-               之后的使用请优先上传处理后的文件。")
+    st.warning("如果您上传的话单数据文件为未处理过的, 请确保文件中存在'己方号码'、'截获时间'、'呼叫类型'、'对方号码'、'己方位置区'、'己方小区'这6个列名。 \n\
+               如果数据里存在己方号码和对方号码的真实姓名, 请将他们的列名改为'己方姓名'和'对方姓名'这两个列名, 否则将不会被读取。 \n\
+               上传未处理的文件后会生成一个处理后的csv文件, 请按下载按钮下载并妥善保存, 该文件名为原文件名后加上'_handled'。之后的使用请优先上传处理后的文件。")
     st.warning('由于lbs转换经纬度的接口限制, 本程序每天处理原始数据的记录数量上限为10000条, 建议单次处理原始数据的记录数量不超过5000条。如果是使用处理后的数据, 则无使用限制。')
 
     # upload file
-    uploaded_file = st.file_uploader("上传话单文件", type=["csv", "xlsx"])
+    uploaded_file = st.file_uploader("上传话单文件", type=["csv", "xlsx", "xls"])
     st.button("上传", on_click=on_upload_button_clicked)
 
     if (uploaded_file is not None) and (st.session_state['upload_button_clicked'] == True):
@@ -53,7 +53,7 @@ if st.session_state['have_data'] == False:
             if st.session_state['download_button_clicked'] == False:
                 st.warning("正在处理数据, 请稍等...")
                 df_final = process_data(uploaded_file=uploaded_file, file_name=file_name)
-
+                
                 st.session_state['df_final'] = df_final
 
                 # save handled data
@@ -98,7 +98,7 @@ elif st.session_state['have_data'] == True:
     phone_list = list(data_no_nan['己方号码'].unique())
 
     # create the list of call types
-    call_type_list = ['主叫', '被叫', '主短', '被短']
+    call_type_list = list(data_no_nan['呼叫类型'].unique())
 
     # create the list of maps
     map_list = list(map_dict.keys())
