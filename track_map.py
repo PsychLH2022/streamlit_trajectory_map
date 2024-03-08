@@ -86,7 +86,7 @@ elif st.session_state['have_data'] == True:
     change_col_list = ['己方号码', '对方号码', '己方位置区', '己方小区', '己方卡号', '己方机身码']
     for col in change_col_list:
         if col in data.columns:
-            data[col] = data[col].fillna(0).astype(np.int64).astype(str)
+            data[col] = data[col].fillna(0).astype(np.int64, errors='ignore').astype(str)
             data[col] = data[col].replace('0', pd.NA)
     data['截获时间'] = pd.to_datetime(data['截获时间'])
     
