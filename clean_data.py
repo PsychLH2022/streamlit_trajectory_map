@@ -49,6 +49,13 @@ def clean_data(df):
 
     # extract useful columns
     basic_cols = ['己方号码', '截获时间', '呼叫类型', '对方号码', '己方位置区', '己方小区']
+    
+    # check if one of the columns is in the dataframe
+    for col in basic_cols:
+        if col not in df.columns:
+            st.error(f"上传的话单文件中不包含{col}列, 请检查后重新上传。")
+            st.stop()
+
     other_cols = ['己方卡号', '己方机身码', '时长', '己方姓名', '对方姓名']
     all_cols = basic_cols
     for col in other_cols:
